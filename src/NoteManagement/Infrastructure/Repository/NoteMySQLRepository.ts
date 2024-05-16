@@ -12,13 +12,14 @@ export default class noteMysqlRepository implements NoteInterface {
       
 
     if (result) {
-
-      return {
-        id: result.insertId, 
-        name: note.name, 
-        content:note.content,
-        date: note.date
-      }
+        const notes=await this.getStatistics();
+        return {
+            id: result.insertId, 
+            name: note.name, 
+            content:note.content,
+            date: note.date,
+            total: notes
+        }
 
     } else {
       throw new Error("Error al insertar la nota en la base de datos");
@@ -28,6 +29,23 @@ export default class noteMysqlRepository implements NoteInterface {
         throw new Error(`Error en la operación de guardado`);
     }
   }
+    async getStatistics() {
+        const sql = "SELECT count(*) as Total FROM Notes;";
+        const params: any[] = [];
+        try {
+        const [[result]]: any = await query(sql, params);
+            
+            return result.Total;
+        if (result){
+            return true;
+        }
+        else {
+            return false;
+        }
+        }catch (error) {
+            return false;
+        }
+    }
   async addAlumnnote(note:number,alumn: number) {
     let updateQuery = "UPDATE Students SET note = ? where id = ?";
     const params: any[] = [note,alumn];
