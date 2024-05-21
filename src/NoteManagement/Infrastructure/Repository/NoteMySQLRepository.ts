@@ -4,13 +4,27 @@ import query from "../../../Database/mysql";
 
 
 export default class noteMysqlRepository implements NoteInterface {
+  async updateNote(id: number, contenido: string, date: string) {
+    let updateQuery = "UPDATE Notes SET content = ?, date = ? WHERE id = ?";
+    const params: any[] = [contenido, date, id];
+    try {
+      const [result]: any = await query(updateQuery, params);
+      if (result && result.affectedRows > 0) {
+        return true
+      } else {
+        throw new Error("No se pudo actualizar la nota");
+      }
+    } catch (error) {
+      throw new Error(`Error en la operación de actualización`);
+    }
+  }
+
   async registerNote(note: Note): Promise<any> {
     const sql = "INSERT INTO Notes (name, content,date) VALUES (?,?,?)";
     const params: any[] = [note.name, note.content,note.date];
     try {
       const [result]: any = await query(sql, params);
-      
-
+    
     if (result) {
         const notes=await this.getStatistics();
         return {
@@ -34,7 +48,6 @@ export default class noteMysqlRepository implements NoteInterface {
         const params: any[] = [];
         try {
         const [[result]]: any = await query(sql, params);
-            
             return result.Total;
         if (result){
             return true;
@@ -46,42 +59,8 @@ export default class noteMysqlRepository implements NoteInterface {
             return false;
         }
     }
-  async addAlumnnote(note:number,alumn: number) {
-    let updateQuery = "UPDATE Students SET note = ? where id = ?";
-    const params: any[] = [note,alumn];
-    try {
-      const [result]: any = await query(updateQuery, params);
-
-      if (result && result.affectedRows > 0) {
-        return true
-      } else {
-        throw new Error("No se pudo actualizar el usuario");
-      }
-    } catch (error) {
-      throw new Error(`Error en la operación de actualización`);
-    }
-  }
-  async listStudents(note: number): Promise<any> {
-    const sql = "SELECT * FROM Students WHERE note = ?";
-    const params: any[] = [note];
-    try {
-      const [result]: any = await query(sql, params);
-      
-      if (result){
-        return result;
-      }
-      
-      else {
-        false
-      }
-    }
-    catch (error) {
-      false
-    }
-  }
-  
   async listAll(): Promise<any> {
-    const sql = "SELECT * FROM notes";
+    const sql = "SELECT * FROM Notes";
     const params: any[] = [];
     try {
       const [result]: any = await query(sql, params);
@@ -95,6 +74,20 @@ export default class noteMysqlRepository implements NoteInterface {
     }
     catch (error) {
       return false;
+    }
+  }
+
+  async delete(id: number): Promise<any> {
+    const sql = "DELETE FROM Notes WHERE id = ?";
+    const params: any[] = [id];
+    try {
+      const [result]: any = await query(sql, params);
+      
+      return true;
+    }
+
+    catch (error) {
+      return false
     }
   }
 }
